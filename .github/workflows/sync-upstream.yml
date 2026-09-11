@@ -1,0 +1,52 @@
+name: Sync upstream
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-upstream-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - env:
+          TARGET_BRANCH: ${{ github.ref_name }}
+          UPSTREAM_URL: https://github.com/affaan-m/ECC
+          UPSTREAM_BRANCH: main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch "$UPSTREAM_URL" "$UPSTREAM_BRANCH"
+          git merge --strategy=ours --no-commit --no-ff FETCH_HEAD
+          # Replace upstream content, including deletions, but keep our workflow.
+          git restore --source=FETCH_HEAD --staged --worktree -- .
+          git restore --source=HEAD --staged --worktree -- .github/workflows/sync-upstream.yml
+          git rm -r --force --ignore-unmatch -- . \
+            ':(exclude)skills' \
+            ':(exclude)rules' \
+            ':(top,glob,exclude)LICENSE*' \
+            ':(exclude).github/workflows/sync-upstream.yml'
+          test -d skills && test -d rules && test -f LICENSE
+          test -f .github/workflows/sync-upstream.yml
+          test -z "$(git ls-files -- . \
+            ':(exclude)skills' \
+            ':(exclude)rules' \
+            ':(top,glob,exclude)LICENSE*' \
+            ':(exclude).github/workflows/sync-upstream.yml')"
+          if git rev-parse --verify --quiet MERGE_HEAD >/dev/null || ! git diff --cached --quiet; then
+            git commit -m "chore: sync upstream skills and rules"
+            git push origin "HEAD:$TARGET_BRANCH"
+          fi
