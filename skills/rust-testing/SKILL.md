@@ -169,10 +169,6 @@ my_crate/
 │       └── mod.rs
 ```
 
-### Build-driver wrapper regressions
-
-For a compiler wrapper that accepts Cargo commands, test the real driver rather than mocking compiler probes. Run `check`, `build`, and `run` with an isolated cache and target directory. Clean the target directory before the second invocation and assert cache hits, so Cargo's existing artifacts cannot hide a broken wrapper. Check the driver's error output and exit code against a direct invocation. Exercise inherited wrapper and incremental settings. Cargo expects `CARGO_INCREMENTAL=0` but `CARGO_BUILD_INCREMENTAL=false`, not `0` for both variables. Run server-dependent checks serially and isolate the daemon address. Permission-denial tests that write under `/` do not establish denial when the test process runs as root.
-
 ### Writing Integration Tests
 
 ```rust
