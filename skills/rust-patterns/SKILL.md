@@ -7,6 +7,10 @@ metadata:
 
 # Rust Development Patterns
 
+## Project formatting
+
+Read the repository's `rustfmt.toml` and run `cargo fmt` with that configuration after Rust edits. The user's current preference explicitly supersedes the earlier prohibition on `cargo fmt`; preserve the configured style rather than formatting manually or using defaults. Review the resulting diff and preserve concurrent user edits.
+
 Idiomatic Rust patterns and best practices for building safe, performant, and maintainable applications.
 
 ## When to Use

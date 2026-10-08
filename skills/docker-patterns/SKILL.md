@@ -247,7 +247,34 @@ services:
       - NET_BIND_SERVICE          # Only if binding to ports < 1024
 ```
 
-### Secret Management
+### Bind-Mount Identity Preservation
+
+- Separate a nonroot image's logical account from its host UID mapping. `USER ubuntu` alone does not preserve bind-mount ownership under rootless engines.
+- For rootless Podman with an image account at fixed UID/GID 1000, use `--userns=keep-id:uid=1000,gid=1000 --user=ubuntu:ubuntu`. Explicit mapped IDs retain the named account while files map back to the caller's UID and primary GID; plain keep-id overrides the image's USER instruction.
+- Distinguish rootful Docker's numeric `--user` recipe from rootless or userns-remapped Docker. Arbitrary numeric users can lose named-account lookup and access to the image user's home; do not promise equivalent behavior.
+- Avoid `:U` for ownership preservation because it recursively chowns the host mount. SELinux `:Z` controls labels, not UID/GID mapping. Existing wrongly owned files are not repaired by a new mapping.
+- Keep nonroot bootstrap files owned by the image user and interpreter-manager install/bin paths in a writable user home; a USER change alone leaves root-owned paths unusable. Share read-only system interpreters through a common image stage.
+- Build and load image variants before publishing, verify default account/home/interpreter, then create a file through the documented rootless mapping and compare host stat UID/GID with the invoking user's IDs. Disable cgroup creation for a small rootless CI ownership probe when user-controller delegation is unavailable; do not bypass user-namespace authorization or silently skip the check.
+- Report engine absence as an unverified image/runtime boundary. A Python suite or workflow linter is not proof that an image built or a bind mount preserved ownership.
+
+## Topic-Based Compose Templates
+
+- Reuse the shipped entrypoint contract. When an image enters through dumb-init plus zsh, pass `command: [-ec, script]`, not another shell executable; run topic installation first, then source the packaged shell environment because a subprocess's Nix PATH changes do not reach its parent.
+- Preserve application data and agent state in separate named volumes, not the entire home containing image-baked bootstrap code. Use a stable per-template Compose project name and explain that ordinary container removal retains named volumes while teardown with --volumes deletes them.
+- Pin the game version explicitly across container recreation and require an affirmative EULA setting before writing acceptance or launching the server. Parse the Compose model with EULA false in CI; configuration validation must not silently accept a license or deploy an account-linked agent.
+- For a localhost-only tunnel origin, join the server's network namespace with `network_mode: service:server` rather than hardcoding container IPs. Gate startup on the server's TCP health check and specify the local tunnel destination; do not publish an unnecessary host port. Describe namespace/lifecycle coupling rather than calling the services independent.
+- Verify headless agent flags and state-file environment names against the exact installed release's real help and upstream implementation. Persist its state path and let the upstream runtime own claiming/tunnel setup; never embed secrets or pretend a model check establishes an authenticated public tunnel.
+- Validate with the official Compose CLI even when no engine is available, check shell syntax and rejection guards without starting the service, and report actual deployment, world retention across removal, and account-linked routing as unverified until exercised through a real engine. Keep downloaded validators in authorized scratch space and remove them after use.
+
+## s6 shell-workspace migrations
+
+- Keep `/init` as the root entrypoint and put user switching in CMD. Explicit CMD overrides and exec sessions must select the user-switch helper themselves. A keep-id launcher needs an explicit root user for init.
+- For inherited device groups, use `setpriv --keep-groups` when changing the primary UID/GID, set account environment variables explicitly, and check sudo's `preserve_groups` policy separately. Do not enable no-new-privileges when passwordless sudo is part of the contract.
+- Define runtime-directory creation as an s6-rc oneshot depending on `base`. For s6-overlay 3.2.3.2, register it in `/etc/s6-overlay/user-bundles.d/user/contents.d`. Use the exact variable `S6_BEHAVIOUR_IF_STAGE2_FAILS=2` to stop after initialization failure.
+- Verify archive checksums and compile the combined upstream and project service definitions with the pinned real s6-rc compiler. Compilation is not boot evidence. Engine-backed checks must cover real TTY input, noninteractive exit/output, sudo, supplementary groups, and same-container restart persistence.
+- Do not enable `S6_CMD_RECEIVE_SIGNALS` globally for an interactive shell. Test opt-in signal forwarding separately for noninteractive CMDs. `policy-rc.d` exit 101 blocks supported package auto-start paths, not direct systemctl calls or systemd APIs.
+
+## Secret Management
 
 ```yaml
 # GOOD: Use environment variables (injected at runtime)
