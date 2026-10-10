@@ -19,8 +19,8 @@ manual, and Claude plugin installs do not create the required commands on
 or MCP examples:
 
 ```bash
-npm install -g ecc-universal
-ecc memory --help
+npm install --global --prefix "$HOME/.local" ecc-universal
+"$HOME/.local/bin/ecc" memory --help
 command -v ecc-memory-mcp
 ```
 

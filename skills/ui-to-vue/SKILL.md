@@ -66,8 +66,8 @@ npx ui-to-vue-converter@1.0.2 --input ./designs --ui antd-vue --output ./src
 If the package is installed globally, the `ui-to-vue` binary can be used directly:
 
 ```bash
-npm install -g ui-to-vue-converter@1.0.2
-ui-to-vue --input ./screenshots --ui vant --output ./src
+npm install --global --prefix "$HOME/.local" ui-to-vue-converter@1.0.2
+"$HOME/.local/bin/ui-to-vue" --input ./screenshots --ui vant --output ./src
 ```
 
 ## Options

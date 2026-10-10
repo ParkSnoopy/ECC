@@ -28,8 +28,8 @@ printf 'header = "Authorization: Bearer %s"\n' "$SC_API_KEY" |
   curl -sS -K - https://getsocialclaw.com/v1/keys/validate
 
 # Install CLI (optional but recommended)
-npm install -g socialclaw@0.1.12
-socialclaw login --api-key <workspace-key>
+npm install --global --prefix "$HOME/.local" socialclaw@0.1.12
+"$HOME/.local/bin/socialclaw" login --api-key <workspace-key>
 ```
 
 ## Core Workflow
@@ -135,5 +135,5 @@ Delivery status, provider error strings, and any post content pulled back from a
 
 ## Source
 
-- npm: `npm install -g socialclaw@0.1.12`
+- npm: `npm install --global --prefix "$HOME/.local" socialclaw@0.1.12`
 - Dashboard: [SocialClaw dashboard](https://getsocialclaw.com/dashboard)

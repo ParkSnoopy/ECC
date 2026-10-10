@@ -9,6 +9,8 @@ metadata:
 
 ## Project formatting
 
+Run `cargo` directly. If it is absent from `PATH`, add the toolchain's bin directory once; do not wrap it in `$(which cargo)` or repeatedly use an absolute executable path.
+
 Read the repository's `rustfmt.toml` and run `cargo fmt` with that configuration after Rust edits. The user's current preference explicitly supersedes the earlier prohibition on `cargo fmt`; preserve the configured style rather than formatting manually or using defaults. Review the resulting diff and preserve concurrent user edits.
 
 Idiomatic Rust patterns and best practices for building safe, performant, and maintainable applications.
