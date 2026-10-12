@@ -7,12 +7,6 @@ metadata:
 
 # Rust Development Patterns
 
-## Project formatting
-
-Run `cargo` through the existing PATH. If it is unavailable, report the missing command. Do not modify PATH or hardcode Cargo's executable path.
-
-Read the repository's `rustfmt.toml` and run `cargo fmt` with that configuration after Rust edits. Preserve the configured style and concurrent user edits.
-
 Idiomatic Rust patterns and best practices for building safe, performant, and maintainable applications.
 
 ## When to Use
