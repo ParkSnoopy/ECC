@@ -40,19 +40,29 @@ jobs:
           fi
           # Preserve fork automation; discard only excluded upstream paths.
           git restore --source=HEAD --staged --worktree -- .github/workflows/sync-upstream.yml
-          git rm -r --force --ignore-unmatch -- . \
-            ':(exclude)skills' \
-            ':(exclude)rules' \
-            ':(top,glob,exclude)LICENSE*' \
-            ':(exclude).github/workflows/sync-upstream.yml'
+          # Retain skill runtime dependencies, not platform installation bundles.
+          retained=(
+            LICENSE
+            .github/workflows/sync-upstream.yml
+            skills/
+            rules/
+            agents/
+            commands/
+            scripts/
+            hooks/
+            config/
+            schemas/
+            workflows/
+          )
+          excluded=(':(top,glob,exclude)LICENSE*')
+          for file in "${retained[@]}"; do
+            excluded+=(":(top,exclude,literal)$file")
+          done
+          git rm -r --force --ignore-unmatch -- . "${excluded[@]}"
 
           test -d skills && test -d rules && test -f LICENSE
           test -f .github/workflows/sync-upstream.yml
-          test "$(git ls-files -- . \
-            ':(exclude)skills' \
-            ':(exclude)rules' \
-            ':(top,glob,exclude)LICENSE*' \
-            ':(exclude).github/workflows/sync-upstream.yml')" = ""
+          test "$(git ls-files -- . "${excluded[@]}")" = ""
           if git rev-parse --verify --quiet MERGE_HEAD >/dev/null || ! git diff --cached --quiet; then
             git commit -m "chore: sync upstream skills and rules"
             git push origin "HEAD:$TARGET_BRANCH"
